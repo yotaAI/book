@@ -1,0 +1,12 @@
+path,filename,topic,subtopics
+pdfs/quant/q1.pdf, Improving Neural Network Quantization without Retraining using Outlier Channel Splitting, Quantization, starter
+pdfs/quant/q2.pdf, Quantized Neural Networks: Training Neural Networks with Low Precision Weights and Activations, Quantization, starter
+pdfs/quant/q3.pdf, ACIQ:Analytical Clipping for Integer Quantization of Neural Networks., Quantization, starter
+pdfs/quant/q4.pdf, PACT: Parameterized Clipping Activation for Quantized Neural Networks., Quantization, starter
+pdfs/quant/q5.pdf, Deep Learning with Limited Numerical Precision, Quantization, starter
+pdfs/quant/q6.pdf, Lora: Low-rank adaptation of large language models, Quantization, QAT
+pdfs/quant/q7.pdf, Qlora: Efficient finetuning of quantized llms, Quantization, QAT
+pdfs/quant/q8.pdf, GPTQ: Accurate post-training quantization for generative pre-trained transformers, Quantization, PTQ
+pdfs/quant/q9.pdf, Awq: Activation-aware weight quantization for on-device llm compression and acceleration, Quantization, PTQ
+pdfs/quant/q10.pdf, Smoothquant: Accurate and efficient post-training quantization for large language models, Quantization, PTQ
+pdfs/quant/q11.pdf, Zeroquant: Efficient and affordable post-training quantization for large-scale transformers, Quantization, PTQ

@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>📄 Scrollable PDF Reader</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      background: #f3f4f6;
+    }
+
+    header {
+      background: #1f2937;
+      color: white;
+      padding: 1rem;
+      font-size: 1.2rem;
+      text-align: center;
+    }
+
+    #controls {
+      background: #e5e7eb;
+      padding: 0.5rem 1rem;
+      text-align: center;
+      font-size: 0.9rem;
+      color: #111827;
+    }
+
+    #pdf-viewer {
+      flex: 1;
+      overflow-y: auto;
+      padding: 2rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1.5rem;
+    }
+
+    canvas {
+      background: white;
+      border-radius: 6px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+  </style>
+</head>
+<body>
+
+<header id="title">📄 PDF Reader</header>
+
+<div id="controls">
+  Reading progress: <span id="progress">0%</span>
+</div>
+
+<div id="pdf-viewer"></div>
+
+<!-- Load PDF.js from CDN -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script>
+  const pdfjsLib = window['pdfjsLib'];
+  pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+  // Get parameters from URL
+  const urlParams = new URLSearchParams(window.location.search);
+  const file = urlParams.get('file'); // Full relative path: e.g., "pdfs/book.pdf"
+  const name = urlParams.get('name') || file;
+
+  const key = 'progress_' + file; // Same key used in index.html
+
+  document.getElementById('title').textContent = '📄 ' + name;
+
+  const viewer = document.getElementById('pdf-viewer');
+  const progressEl = document.getElementById('progress');
+
+  let pdfDoc = null;
+  let totalPages = 0;
+
+  function saveProgress(currentPage) {
+    const percent = Math.round((currentPage / totalPages) * 100);
+    localStorage.setItem(key, JSON.stringify({
+      currentPage,
+      percent,
+      lastRead: new Date().toISOString()
+    }));
+    progressEl.textContent = `${percent}%`;
+  }
+
+  function renderAllPages(pdf) {
+    totalPages = pdf.numPages;
+
+    for (let pageNum = 1; pageNum <= totalPages; pageNum++) {
+      pdf.getPage(pageNum).then(page => {
+        const viewport = page.getViewport({ scale: 1.5 });
+        const canvas = document.createElement('canvas');
+        canvas.id = `page-${pageNum}`;
+        const context = canvas.getContext('2d');
+        canvas.width = viewport.width;
+        canvas.height = viewport.height;
+
+        const renderContext = {
+          canvasContext: context,
+          viewport: viewport
+        };
+
+        page.render(renderContext);
+        viewer.appendChild(canvas);
+      });
+    }
+
+    // Wait until pages are added, then observe
+    setTimeout(observeScrollProgress, 1000);
+  }
+
+  function observeScrollProgress() {
+    const observer = new IntersectionObserver(entries => {
+      const visible = entries.filter(e => e.isIntersecting);
+      if (visible.length > 0) {
+        const pageNum = parseInt(visible[0].target.id.split('-')[1], 10);
+        saveProgress(pageNum);
+      }
+    }, {
+      root: viewer,
+      threshold: 0.6 // 60% of the page should be visible
+    });
+
+    for (let i = 1; i <= totalPages; i++) {
+      const canvas = document.getElementById(`page-${i}`);
+      if (canvas) observer.observe(canvas);
+    }
+  }
+
+  if (file) {
+    pdfjsLib.getDocument(file).promise.then(pdf => {
+      pdfDoc = pdf;
+      renderAllPages(pdfDoc);
+    }).catch(err => {
+      viewer.innerHTML = `<p style="color:red;">❌ Failed to load PDF: ${err.message}</p>`;
+    });
+  } else {
+    document.body.innerHTML = '<h2>No PDF selected.</h2>';
+  }
+</script>
+
+</body>
+</html>
